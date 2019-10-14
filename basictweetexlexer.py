@@ -50,8 +50,8 @@ class Token:
         the value should come directly from the string of input. the type
         should come from the name of the regular expression used to match.
         (they are written in a way that the regex names match the type names)"""
-    def __init__(self, matchObj):
-        self.value = matchObj.
+    def __init__(self, matchObj, type):
+        self.value = matchObj
         self.type = None
         self.children = []
     def getValue(self):
@@ -60,17 +60,38 @@ class Token:
         return self.type
 
 class Lexer:
-    def __init__(self, sourcefile):
-        self.filelocation = sourcefile #a filename
-        self.commands = ["link", "start", "author", "title"]
-        self.tokens = {r'\\ifid\{([\d]+)\}' : "IFID",
-                       r'\\passage\{([^\\\{\}])\}\n[\w^"\passage"]*' : "PASSAGE",
-                       r'
+    def __init__(self, filelocation):
+        self.filelocation = filelocation #a filename
+        self.commands = ["link", "start", "author", "title", "ifid"]
+        self.tokens = {r'\{'                : "LEFTCURLY",
+                       r'\}'                : "RIGHTCURLY",
+                       r'\\[a-z]+'          : "COMMAND", #one slash and some text
+                       r'[^\\\{\}]'         : "CHARACTERS"} #anything that isn't a delimiter
+                                                            #or a command
     def __enter__(self):
-        self.sourcecode = open(self.sourcefile, "r")
+        self.sourcecode = open(self.filelocation, "r")
+
     def __exit__(self):
         self.soucecode.close()
+
     def lex(self):
+        result = []
         with self.sourcecode as file:
             for line in self.sourcecode:
                 for word in line:
+                    for key, val in self.tokens:
+                        match = re.match(key, word)
+                        if match:
+                            token = Token(match, val)
+                            result.append(token)
+                        else:
+                            print("Lexical Error: The input provided does not fit\
+                                  the syntactical specification of TweeTeX.\n\n")
+                            return None
+        return result
+
+def main():
+    filename =
+
+if __name__ == "__main__":
+    import doctest
