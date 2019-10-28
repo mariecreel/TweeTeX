@@ -1,0 +1,11 @@
+\title{My Story}
+\author{Nick Creel}
+\ifid{0CA8C7C5-F219-4B1B-A3A8-45710F389818}
+\start{Starting Passage}
+
+\passage{Starting Passage}
+This is some text in the first passage
+\link{Second Passage}{This link goes to the second passage}
+
+\passage{Second Passage}
+This is some text in the second passage.
