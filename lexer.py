@@ -4,7 +4,7 @@ lexer.py
 general purpose lexer class.
 """
 import re
-DEBUG = True
+DEBUG = False 
 
 class Token:
     """
@@ -14,8 +14,8 @@ class Token:
         self.value = value
         self.token_type = token_type
         self.children = []
-    def __str__(self):
-        return f"Token VALUE: {self.value} TYPE: {self.token_type}"
+    def __repr__(self):
+        return f"<<Token VALUE: {self.value} TYPE: {self.token_type}>>"
 
 class Lexer:
     """
@@ -44,14 +44,14 @@ class Lexer:
                 print(f"token is {token}")
             match = re.match(token, string)
             if match and len(match.groups())>1:
-                tokenobj = Token(match.group(2), token)
+                tokenobj = Token(match.group(2),self.token_types[token])
                 self.tokens.append(tokenobj)
                 if DEBUG:
                     print(string[len(match.group(1)):])
                 result = string[len(match.group(1)):]
                 return result
             elif match and len(match.groups()) is 1:
-                tokenobj = Token(match.group(1), token)
+                tokenobj = Token(match.group(1), self.token_types[token])
                 self.tokens.append(tokenobj)
                 result = string[len(match.group(1)):]
                 return result
