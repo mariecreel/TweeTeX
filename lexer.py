@@ -6,6 +6,24 @@ general purpose lexer class.
 nick creel | nov 12 2019 | mit license
 """
 import re
+## TODO: make some simple test story function that makes a simple story for testing...
+
+class Queue:
+	""" Mostly a standard FIFO queue, with the option of put()ting something in 0th
+		position like a stack."""
+	def __init__(self):
+		self.queue = []
+	def enqueue(self, something):
+		self.queue.append(something)
+	def dequeue(self):
+		return self.queue.pop(0)
+	def put(self, something):
+		self.queue.insert(0, something)
+	def isEmpty(self):
+		if self.queue:
+			return False
+		else:
+			return True
 
 class Token:
     """
@@ -37,7 +55,9 @@ class Token:
     Token('hello', 'CHARACTER', 'hello')
     """
 
-    def __init__(self, value, token_type, match):
+    def __init__(self, value = None, token_type = None, match = None):
+        # i just made these all none because I didn't want to rearrange 
+        # all my examples...
         self.value = value
         self.token_type = token_type
         self.children = []
@@ -70,7 +90,7 @@ class Lexer:
 
     def __init__(self, text):
         self.text = text
-        self.tokens = [] 
+        self.tokens = Queue()
         self.token_types = { r'(\{)' : "LEFTCURLY",
                              r'(\})':"RIGHTCURLY",
                              r'(\\([a-z]+))':"COMMAND",
@@ -82,12 +102,12 @@ class Lexer:
             match = re.match(token, string)
             if match and len(match.groups())==2:
                 tokenobj = Token(match.group(2),self.token_types[token], match.group(1))
-                self.tokens.append(tokenobj)
+                self.tokens.enqueue(tokenobj)
                 result = string[len(match.group(1)):]
                 return result
             elif match and len(match.groups()) is 1:
                 tokenobj = Token(match.group(1), self.token_types[token], match.group(1))
-                self.tokens.append(tokenobj)
+                self.tokens.enqueue(tokenobj)
                 result = string[len(match.group(1)):]
                 return result
         return False

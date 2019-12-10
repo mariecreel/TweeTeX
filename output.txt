@@ -1,0 +1,66 @@
+Token('title', 'COMMAND', '\title')
+Token('{', 'LEFTCURLY', '{')
+Token('My Story', 'CHARACTER', 'My Story')
+Token('}', 'RIGHTCURLY', '}')
+Token('author', 'COMMAND', '\author')
+Token('{', 'LEFTCURLY', '{')
+Token('Nick Creel', 'CHARACTER', 'Nick Creel')
+Token('}', 'RIGHTCURLY', '}')
+Token('ifid', 'COMMAND', '\ifid')
+Token('{', 'LEFTCURLY', '{')
+Token('0CA8C7C5-F219-4B1B-A3A8-45710F389818', 'CHARACTER', '0CA8C7C5-F219-4B1B-A3A8-45710F389818')
+Token('}', 'RIGHTCURLY', '}')
+Token('start', 'COMMAND', '\start')
+Token('{', 'LEFTCURLY', '{')
+Token('Starting Passage', 'CHARACTER', 'Starting Passage')
+Token('}', 'RIGHTCURLY', '}')
+Token('passage', 'COMMAND', '\passage')
+Token('{', 'LEFTCURLY', '{')
+Token('Starting Passage', 'CHARACTER', 'Starting Passage')
+Token('}', 'RIGHTCURLY', '}')
+Token('This is some text in the first passage
+', 'CHARACTER', 'This is some text in the first passage
+')
+Token('link', 'COMMAND', '\link')
+Token('{', 'LEFTCURLY', '{')
+Token('Second Passage', 'CHARACTER', 'Second Passage')
+Token('}', 'RIGHTCURLY', '}')
+Token('{', 'LEFTCURLY', '{')
+Token('This link goes to the second passage', 'CHARACTER', 'This link goes to the second passage')
+Token('}', 'RIGHTCURLY', '}')
+Token('passage', 'COMMAND', '\passage')
+Token('{', 'LEFTCURLY', '{')
+Token('Second Passage', 'CHARACTER', 'Second Passage')
+Token('}', 'RIGHTCURLY', '}')
+Token('This is some text in the second passage.
+', 'CHARACTER', 'This is some text in the second passage.
+')
+in story before preamble
+in preamble, token.token_type is COMMAND
+in macro, token.token_type is COMMAND
+in macro before arg, token.token_type is COMMAND
+token.value is title
+in arg after next token, token.token_type is LEFTCURLY
+token.value is {
+in macro after argument, token.token_type is COMMAND
+in macro before arg, token.token_type is COMMAND
+token.value is author
+in arg after next token, token.token_type is LEFTCURLY
+token.value is {
+in macro after argument, token.token_type is COMMAND
+in macro before arg, token.token_type is COMMAND
+token.value is ifid
+in arg after next token, token.token_type is LEFTCURLY
+token.value is {
+in macro after argument, token.token_type is COMMAND
+in macro before arg, token.token_type is COMMAND
+token.value is start
+in arg after next token, token.token_type is LEFTCURLY
+token.value is {
+in macro after argument, token.token_type is COMMAND
+in macro, token.token_type is COMMAND
+in macro before arg, token.token_type is COMMAND
+token.value is title
+in arg after next token, token.token_type is COMMAND
+token.value is passage
+Parsing error: missing left curly brace
