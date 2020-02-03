@@ -13,6 +13,8 @@ class Queue:
 		position like a stack."""
 	def __init__(self):
 		self.queue = []
+	def __repr__(self):
+		return f"{self.queue}"
 	def enqueue(self, something):
 		self.queue.append(something)
 	def dequeue(self):
@@ -33,7 +35,7 @@ class Token:
     Token Type = The token assigned to that value during lexing.
         There are four valid types: LEFTCURLY, RIGHTCURLY, COMMAND,
         and CHARACTER.
-    Match = the exact string which matched to the token type 
+    Match = the exact string which matched to the token type
             during lexing
     Children = assigned during parsing, the tokens which recursively
                follow from the current token based on the grammar
@@ -43,20 +45,24 @@ class Token:
     but if the input falls out of the grammar specified,
     then there will be errors during parsing. Generally,
     these should only be created by the lexer object to avoid
-    problems in parsing. 
+    problems in parsing.
 
     >>> Token('{', 'LEFTCURLY', '{')
     Token('{', 'LEFTCURLY', '{')
     >>> Token('}', 'RIGHTCURLY', '}')
     Token('}', 'RIGHTCURLY', '}')
-    >>> Token('hello', 'COMMAND', '\hello')
-    Token('hello', 'COMMAND', '\hello')
+    >>> Token('link', 'MACROCOMMAND', '\link')
+    Token('link', 'MACROCOMMAND', '\link')
+    >>> Token('start', 'PREAMBLECOMMAND', '\start')
+    Token('start', 'PREAMBLECOMMAND', '\start')
+    >>> Token('\passage', 'PASSAGECOMMAND', '\passage')
+    Token('\passage', 'PASSAGECOMMAND', '\passage')
     >>> Token('hello', 'CHARACTER', 'hello')
     Token('hello', 'CHARACTER', 'hello')
     """
 
     def __init__(self, value = None, token_type = None, match = None):
-        # i just made these all none because I didn't want to rearrange 
+        # i just made these all none because I didn't want to rearrange
         # all my examples...
         self.value = value
         self.token_type = token_type
@@ -70,32 +76,37 @@ class Lexer:
     """
     Lexer is an object which takes the contents of a source file as
     input and tokenizes the input based on the TweeTeX specification.
-    Note: A lexer must be initialized with its source file as an 
+    Note: A lexer must be initialized with its source file as an
     input, then the lex method may be called.
 
     A lexer object has three attributes:
     text = the source file contents
     tokens = list of tokens generated during lexing
-    token_types = legal set of tokens which can be recognized, and 
+    token_types = legal set of tokens which can be recognized, and
                   corresponding regular expressions
     >>> mylexer = Lexer("hello")
     >>> mylexer.lex()
     >>> mylexer.tokens
     [Token('hello', 'CHARACTER', 'hello')]
-    >>> mylexer = Lexer("\hello")
+    >>> mylexer = Lexer("\link")
     >>> mylexer.lex()
     >>> mylexer.tokens
-    [Token('hello', 'COMMAND', '\hello')]
+    [Token('link', 'MACROCOMMAND', '\link')]
     """
+    # MACROCOMMANDS = ["link"]
+    # PREAMBLECOMMANDS = ["author", "title", "start", "ifid"]
+    # there's probably some way to insert a list of strings into a regular expression...
 
     def __init__(self, text):
         self.text = text
         self.tokens = Queue()
         self.token_types = { r'(\{)' : "LEFTCURLY",
                              r'(\})':"RIGHTCURLY",
-                             r'(\\([a-z]+))':"COMMAND",
+                             r'(\\(link))':"MACROCOMMAND",
+                             r'(\\(author|title|ifid|start))':"PREAMBLECOMMAND",
+                             r'(\\(passage))':"PASSAGECOMMAND",
                              r'([^\\\{\}]+)': 'CHARACTER'}
-    
+
     def _next_token(self, source):
         string = source.lstrip()
         for token in self.token_types:
@@ -111,7 +122,7 @@ class Lexer:
                 result = string[len(match.group(1)):]
                 return result
         return False
-    
+
     def lex(self):
         source = self.text
         while len(source) != 0:

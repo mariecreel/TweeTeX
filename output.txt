@@ -1,3 +1,4 @@
+-------printing tokens produced by lexer
 Token('title', 'COMMAND', '\title')
 Token('{', 'LEFTCURLY', '{')
 Token('My Story', 'CHARACTER', 'My Story')
@@ -35,32 +36,149 @@ Token('}', 'RIGHTCURLY', '}')
 Token('This is some text in the second passage.
 ', 'CHARACTER', 'This is some text in the second passage.
 ')
-in story before preamble
-in preamble, token.token_type is COMMAND
-in macro, token.token_type is COMMAND
-in macro before arg, token.token_type is COMMAND
-token.value is title
+
+--------beginning parse routine
+tokens remaining == 33
+in tokenqueue, token is Token('title', 'COMMAND', '\title')
+tokens remaining == 32
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
 in arg after next token, token.token_type is LEFTCURLY
 token.value is {
-in macro after argument, token.token_type is COMMAND
-in macro before arg, token.token_type is COMMAND
-token.value is author
+tokens remaining == 31
+in tokenqueue, token is Token('My Story', 'CHARACTER', 'My Story')
+appending text to argument.children, value is My Story
+tokens remaining == 30
+in tokenqueue, token is Token('}', 'RIGHTCURLY', '}')
+looking for right curly, token type is RIGHTCURLY
+Token('None', 'ARGUMENT', 'None') [Token('My Story', 'CHARACTER', 'My Story')]
+tokens remaining == 29
+in tokenqueue, token is Token('author', 'COMMAND', '\author')
+argument is  [Token('None', 'ARGUMENT', 'None')]
+returning macro
+tokens remaining == 29
+in tokenqueue, token is Token('author', 'COMMAND', '\author')
+['ifid', 'title', 'start', 'author']
+tokens remaining == 28
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
 in arg after next token, token.token_type is LEFTCURLY
 token.value is {
-in macro after argument, token.token_type is COMMAND
-in macro before arg, token.token_type is COMMAND
-token.value is ifid
+tokens remaining == 27
+in tokenqueue, token is Token('Nick Creel', 'CHARACTER', 'Nick Creel')
+appending text to argument.children, value is Nick Creel
+tokens remaining == 26
+in tokenqueue, token is Token('}', 'RIGHTCURLY', '}')
+looking for right curly, token type is RIGHTCURLY
+Token('None', 'ARGUMENT', 'None') [Token('Nick Creel', 'CHARACTER', 'Nick Creel')]
+tokens remaining == 25
+in tokenqueue, token is Token('ifid', 'COMMAND', '\ifid')
+argument is  [Token('None', 'ARGUMENT', 'None')]
+returning macro
+tokens remaining == 25
+in tokenqueue, token is Token('ifid', 'COMMAND', '\ifid')
+['ifid', 'title', 'start', 'author']
+tokens remaining == 24
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
 in arg after next token, token.token_type is LEFTCURLY
 token.value is {
-in macro after argument, token.token_type is COMMAND
-in macro before arg, token.token_type is COMMAND
-token.value is start
+tokens remaining == 23
+in tokenqueue, token is Token('0CA8C7C5-F219-4B1B-A3A8-45710F389818', 'CHARACTER', '0CA8C7C5-F219-4B1B-A3A8-45710F389818')
+appending text to argument.children, value is 0CA8C7C5-F219-4B1B-A3A8-45710F389818
+tokens remaining == 22
+in tokenqueue, token is Token('}', 'RIGHTCURLY', '}')
+looking for right curly, token type is RIGHTCURLY
+Token('None', 'ARGUMENT', 'None') [Token('0CA8C7C5-F219-4B1B-A3A8-45710F389818', 'CHARACTER', '0CA8C7C5-F219-4B1B-A3A8-45710F389818')]
+tokens remaining == 21
+in tokenqueue, token is Token('start', 'COMMAND', '\start')
+argument is  [Token('None', 'ARGUMENT', 'None')]
+returning macro
+tokens remaining == 21
+in tokenqueue, token is Token('start', 'COMMAND', '\start')
+['ifid', 'title', 'start', 'author']
+tokens remaining == 20
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
 in arg after next token, token.token_type is LEFTCURLY
 token.value is {
-in macro after argument, token.token_type is COMMAND
-in macro, token.token_type is COMMAND
-in macro before arg, token.token_type is COMMAND
-token.value is title
-in arg after next token, token.token_type is COMMAND
-token.value is passage
-Parsing error: missing left curly brace
+tokens remaining == 19
+in tokenqueue, token is Token('Starting Passage', 'CHARACTER', 'Starting Passage')
+appending text to argument.children, value is Starting Passage
+tokens remaining == 18
+in tokenqueue, token is Token('}', 'RIGHTCURLY', '}')
+looking for right curly, token type is RIGHTCURLY
+Token('None', 'ARGUMENT', 'None') [Token('Starting Passage', 'CHARACTER', 'Starting Passage')]
+tokens remaining == 17
+in tokenqueue, token is Token('passage', 'COMMAND', '\passage')
+argument is  [Token('None', 'ARGUMENT', 'None')]
+returning macro
+tokens remaining == 17
+in tokenqueue, token is Token('passage', 'COMMAND', '\passage')
+['ifid', 'title', 'start', 'author']
+<lexer.Queue object at 0x10fa44290>
+tokens remaining == 17
+in tokenqueue, token is Token('passage', 'COMMAND', '\passage')
+in passage, token value is passage, type is COMMAND
+in passage while loop,  Token('passage', 'COMMAND', '\passage') COMMAND
+tokens remaining == 16
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
+in arg after next token, token.token_type is LEFTCURLY
+token.value is {
+tokens remaining == 15
+in tokenqueue, token is Token('Starting Passage', 'CHARACTER', 'Starting Passage')
+appending text to argument.children, value is Starting Passage
+tokens remaining == 14
+in tokenqueue, token is Token('}', 'RIGHTCURLY', '}')
+looking for right curly, token type is RIGHTCURLY
+Token('None', 'ARGUMENT', 'None') [Token('Starting Passage', 'CHARACTER', 'Starting Passage')]
+tokens remaining == 13
+in tokenqueue, token is Token('This is some text in the first passage
+', 'CHARACTER', 'This is some text in the first passage
+')
+tokens remaining == 13
+in tokenqueue, token is Token('This is some text in the first passage
+', 'CHARACTER', 'This is some text in the first passage
+')
+tokens remaining == 12
+in tokenqueue, token is Token('link', 'COMMAND', '\link')
+running macro for _macro in text
+tokens remaining == 11
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
+in arg after next token, token.token_type is LEFTCURLY
+token.value is {
+tokens remaining == 10
+in tokenqueue, token is Token('Second Passage', 'CHARACTER', 'Second Passage')
+appending text to argument.children, value is Second Passage
+tokens remaining == 9
+in tokenqueue, token is Token('}', 'RIGHTCURLY', '}')
+looking for right curly, token type is RIGHTCURLY
+Token('None', 'ARGUMENT', 'None') [Token('Second Passage', 'CHARACTER', 'Second Passage')]
+tokens remaining == 8
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
+tokens remaining == 7
+in tokenqueue, token is Token('This link goes to the second passage', 'CHARACTER', 'This link goes to the second passage')
+appending text to argument.children, value is This link goes to the second passage
+tokens remaining == 6
+in tokenqueue, token is Token('}', 'RIGHTCURLY', '}')
+looking for right curly, token type is RIGHTCURLY
+Token('None', 'ARGUMENT', 'None') [Token('Second Passage', 'CHARACTER', 'Second Passage'), Token('This link goes to the second passage', 'CHARACTER', 'This link goes to the second passage')]
+tokens remaining == 5
+in tokenqueue, token is Token('passage', 'COMMAND', '\passage')
+argument is  [Token('None', 'ARGUMENT', 'None'), Token('None', 'ARGUMENT', 'None')]
+returning macro
+tokens remaining == 5
+in tokenqueue, token is Token('passage', 'COMMAND', '\passage')
+done with text
+tokens remaining == 5
+in tokenqueue, token is Token('passage', 'COMMAND', '\passage')
+if _text,  passage
+in else statement of grab text
+passage is Token('None', 'PASSAGE', 'None')
+tokens remaining == 5
+in tokenqueue, token is Token('passage', 'COMMAND', '\passage')
+in passage, token value is passage, type is COMMAND
+in passage while loop,  Token('passage', 'COMMAND', '\passage') COMMAND
+tokens remaining == 4
+in tokenqueue, token is Token('{', 'LEFTCURLY', '{')
+in arg after next token, token.token_type is LEFTCURLY
+token.value is {
+tokens remaining == 3
+in tokenqueue, token is Token('Second Passage', 'CHARACTER', 'Second Passage')
+appending text to argument.children, value is Second Passage
