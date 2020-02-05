@@ -194,26 +194,18 @@ def preamble(tokenQueue):
 	_preamble = lexer.Token(token_type = "PREAMBLE") 	# make preamble token
 	while True:											# break this loop with returns
 		token = next_token(tokenQueue)				 	# grab a token
-		#print(f"in preamble, token type is {token.token_type} and value is {token.value}")
 		if token.token_type == "PASSAGECOMMAND" and preamble_commands == []:
 			#this should only execute if all preamble macros found...
 			tokenQueue.put(token)
-			#print(f"preamble is {_preamble}")
 			return(_preamble, tokenQueue)
 		elif token.token_type == "PASSAGECOMMAND" and preamble_commands != []:
 			#if we reach a passage before we have all the required preamble commands...
-			#print(f"preamble commands left: {preamble_commands}")
-			#print("preamble_commands not empty, returning false in preamble")
 			return(False, None)
 		elif token.value not in preamble_commands or token.token_type != "PREAMBLECOMMAND":
-			#if there's some input that doesn't make sense...
-		#	print("input doesn't make sense, returning false in preamble")
 			return(False, None)
 		else:
 			#if everything is kosher so far...
-			#print("good so far")
 			preamble_commands.pop(preamble_commands.index(token.value))
-			#print(preamble_commands)
 			_premacro, tokenQueue = preamblemacro(token, tokenQueue)
 			if _premacro == False:
 				return(False, None)
@@ -293,29 +285,20 @@ def passage(tokenQueue):
 	token = next_token(tokenQueue)
 	_passage = lexer.Token(token_type = "PASSAGE")
 	_passage.children.append(token)
-	#print(tokenQueue.queue)
 	_argument, tokenQueue = argument(tokenQueue) #get arguments (right now just psgtitle)
-	print("after return, tokenQueue is",tokenQueue)
-	print("after return, _argument is",_argument)
 	if _argument == False:
-		print("_argument is false")
 		return(False, None)
 	elif len(_argument) == 1:
 		_passage.children.append(_argument[0])
 		token = next_token(tokenQueue)
-		print("arg is len 1")
 	elif len(_argument) > 1:
 		for i in _argument:
 			_passage.children.append(i)
 		token = next_token(tokenQueue)
-	print("outside of argument if statement")
 	while token.token_type != "EOF" and token.token_type !="PASSAGECOMMAND":
-			print("grabbing text")
 			_text, tokenQueue = text(tokenQueue)
-			print(f"text is {_text}")
 			if _text:
 				_passage.children.append(_text)
-				print("appending text to passage")
 				token = next_token(tokenQueue)
 				print(token)
 			elif _text == False:
@@ -323,7 +306,6 @@ def passage(tokenQueue):
 				return (False, None)
 			elif _text == None:
 				return (_passage, tokenQueue)
-	print("outside of while loop")
 	print(token)
 	tokenQueue.put(token)
 	return (_passage, tokenQueue)
@@ -403,7 +385,6 @@ def argument(tokenQueue):
 	arguments = []
 
 	if token.token_type == "LEFTCURLY":
-		print("token is leftcurly")
 		pass
 	else:
 		return(False, None)
@@ -413,13 +394,10 @@ def argument(tokenQueue):
 		if anothertoken.token_type == "CHARACTER":
 			_argument.children.append(anothertoken)
 			anothertoken = next_token(tokenQueue)
-			print("another token is",anothertoken)
 			if anothertoken.token_type == "RIGHTCURLY":
 				arguments.append(_argument)
 				token = next_token(tokenQueue)
-				print(f"token is {token}")
 			else:
-				print("mismatched curly braces")
 				return (False, None)
 		elif anothertoken.token_type == "MACROCOMMAND":
 			_macro, tokenQueue = macro(token, tokenQueue)
@@ -430,10 +408,7 @@ def argument(tokenQueue):
 		else:
 			print("Parsing Error: argument provided is not a valid argument type.")
 			return(False, None)
-	print("outside while loop")
-	print("before return, arguments is",arguments)
 	tokenQueue.put(token)
-	print("before return, tokenQueue is", tokenQueue.queue)
 	return(arguments, tokenQueue)
 
 def text(tokenQueue):
@@ -467,7 +442,6 @@ def text(tokenQueue):
 			if _macro != False:
 				_text.children.append(_macro)
 			else:
-				print("macro failed")
 				return(False, None)
 		elif token.token_type == "PREAMBLECOMMAND":
 			print("Parsing failed: preamble command in passage text")
