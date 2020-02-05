@@ -48,11 +48,9 @@ def make_test_queue(kind):
 	[Token('passage', 'PASSAGECOMMAND', '\\passage'), Token('{', 'LEFTCURLY', '{'), Token('first', 'CHARACTER', 'first'), Token('}', 'RIGHTCURLY', '}'), Token('This is some text in a passage. ', 'CHARACTER', 'This is some text in a passage. '), Token('link', 'MACROCOMMAND', '\\link'), Token('{', 'LEFTCURLY', '{'), Token('link test', 'CHARACTER', 'link test'), Token('}', 'RIGHTCURLY', '}'), Token('passage', 'PASSAGECOMMAND', '\\passage'), Token('{', 'LEFTCURLY', '{'), Token('second', 'CHARACTER', 'second'), Token('}', 'RIGHTCURLY', '}')]
 
 	>>> make_test_queue("preamblepass")
-	[Token('author', 'PREAMBLECOMMAND', '\\author'), Token('{', 'LEFTCURLY', '{'), Token('author', 'CHARACTER', 'author'), Token('}', 'RIGHTCURLY', '}'), Token('title', 'PREAMBLECOMMAND', '\\title'), Token('{', 'LEFTCURLY', '{'), Token('title', 'CHARACTER', 'title'), Token('}', 'RIGHTCURLY', '}'), Token('ifid', 'PREAMBLECOMMAND', '\\ifid'), Token('{', 'LEFTCURLY', '{'), Token('ifid', 'CHARACTER', 'ifid'), Token('}', 'RIGHTCURLY', '}'), Token('start', 'PREAMBLECOMMAND', '\\start'), Token('{', 'LEFTCURLY', '{'), Token('start', 'CHARACTER', 'start'), Token('}', 'RIGHTCURLY', '}')]
-
+	[Token('author', 'PREAMBLECOMMAND', '\\author'), Token('{', 'LEFTCURLY', '{'), Token('author', 'CHARACTER', 'author'), Token('}', 'RIGHTCURLY', '}'), Token('title', 'PREAMBLECOMMAND', '\\title'), Token('{', 'LEFTCURLY', '{'), Token('title', 'CHARACTER', 'title'), Token('}', 'RIGHTCURLY', '}'), Token('ifid', 'PREAMBLECOMMAND', '\\ifid'), Token('{', 'LEFTCURLY', '{'), Token('ifid', 'CHARACTER', 'ifid'), Token('}', 'RIGHTCURLY', '}'), Token('start', 'PREAMBLECOMMAND', '\\start'), Token('{', 'LEFTCURLY', '{'), Token('start', 'CHARACTER', 'start'), Token('}', 'RIGHTCURLY', '}'), Token('passage', 'PASSAGECOMMAND', '\\passage'), Token('{', 'LEFTCURLY', '{'), Token('start', 'CHARACTER', 'start'), Token('}', 'RIGHTCURLY', '}')]
 	>>> make_test_queue("preamblefail")
-	[Token('author', 'PREAMBLECOMMAND', '\\author'), Token('{', 'LEFTCURLY', '{'), Token('author', 'CHARACTER', 'author'), Token('}', 'RIGHTCURLY', '}'), Token('title', 'PREAMBLECOMMAND', '\\title'), Token('{', 'LEFTCURLY', '{'), Token('title', 'CHARACTER', 'title'), Token('}', 'RIGHTCURLY', '}'), Token('ifid', 'PREAMBLECOMMAND', '\\ifid'), Token('{', 'LEFTCURLY', '{'), Token('ifid', 'CHARACTER', 'ifid'), Token('}', 'RIGHTCURLY', '}')]
-
+	[Token('author', 'PREAMBLECOMMAND', '\\author'), Token('{', 'LEFTCURLY', '{'), Token('author', 'CHARACTER', 'author'), Token('}', 'RIGHTCURLY', '}'), Token('title', 'PREAMBLECOMMAND', '\\title'), Token('{', 'LEFTCURLY', '{'), Token('title', 'CHARACTER', 'title'), Token('}', 'RIGHTCURLY', '}'), Token('ifid', 'PREAMBLECOMMAND', '\\ifid'), Token('{', 'LEFTCURLY', '{'), Token('ifid', 'CHARACTER', 'ifid'), Token('}', 'RIGHTCURLY', '}'), Token('passage', 'PASSAGECOMMAND', '\\passage'), Token('{', 'LEFTCURLY', '{'), Token('start', 'CHARACTER', 'start'), Token('}', 'RIGHTCURLY', '}')]
 	>>> make_test_queue("macropass")
 	[Token('link', 'MACROCOMMAND', '\\link'), Token('{', 'LEFTCURLY', '{'), Token('link_text', 'CHARACTER', 'link_text'), Token('}', 'RIGHTCURLY', '}')]
 
@@ -80,10 +78,10 @@ def make_test_queue(kind):
 	elif kind == "passage2":
 		teststory = r"\passage{first} This is some text in a passage. \link{link test} \passage{second}"
 	elif kind == "preamblepass":
-		teststory = r"\author{author} \title{title} \ifid{ifid} \start{start}"
+		teststory = r"\author{author} \title{title} \ifid{ifid} \start{start} \passage{start}"
 	elif kind == "preamblefail":
 		#preamble should fail if one of the macros is missing.
-		teststory = r"\author{author} \title{title} \ifid{ifid}"
+		teststory = r"\author{author} \title{title} \ifid{ifid} \passage{start}"
 	elif kind == "macropass":
 		teststory = r"\link{link_text}"
 	elif kind == "macrofail":
@@ -151,8 +149,8 @@ def story(tokenQueue):
 	"""
 	The story function takes a token queue as input and returns a token if parsing
 	is successful or False otherwise.
-
-	>>> _story = story(make_test_queue("storypass"))
+	>>> tokenQueue = make_test_queue("storypass")
+	>>> _story = story(tokenQueue)
 	>>> _story
 	Token('None', 'STORY', 'None')
 
@@ -168,7 +166,7 @@ def story(tokenQueue):
 	else:										# if preamble is correctly formatted,
 		_story.children.append(_preamble)        # append the preamble to the story tree.
 		passages = []							# used to store all passages
-		while tokenQueue.isEmpty() == False:    # While we haven't reached EOF...
+		while tokenQueue.queue[0].token_type != "EOF":
 			_passage, tokenQueue = passage(tokenQueue)    # get passage
 			passages.append(_passage)		    # add passage to passage list
 		for pas in passages:					# for each passage...
@@ -181,28 +179,17 @@ def preamble(tokenQueue):
 	token and a token queue if parsing is successful. Otherwise, returns the tuple
 	(False, None).
 
-	>>> _preamble, tokenQueue = preamble(make_test_queue("preamble"))
-
+    >>> _preamble, tokenQueue = preamble(make_test_queue("preamblepass"))
 	>>> tokenQueue
-	[Token('EOF', 'EOF', 'None')]
-
+	[Token('passage', 'PASSAGECOMMAND', '\passage'), Token('{', 'LEFTCURLY', '{'), Token('start', 'CHARACTER', 'start'), Token('}', 'RIGHTCURLY', '}')]
 	>>> _preamble
 	Token('None', 'PREAMBLE', 'None')
-
 	>>> _preamble.children[0]
-	Token('None', 'MACRO', 'None')
-
-	Recall that the test macro made by make_test_queue is an author command.
+	Token('None', 'PREAMBLEMACRO', 'None')
 	>>> _preamble.children[0].children[0]
-	Token('author', 'PREAMBLECOMMAND', '\author')
+	Token('author', 'PREAMBLECOMMAND', '\\author')
 	"""
-	# right now, the order of preamble commands does not affect parsing.
-	# spec only says at least one macro is present, need to make clear that
-	# specific macros are necessary to include in the preamble, without
-	# enforcing order...
-	# I don't think the order should matter really, as the preamble is mostly
-	# metadata about the story, and not establishing any new scope where
-	# any order of operations matters.
+
 	preamble_commands = ["title", "author", "ifid", "start"]
 	_preamble = lexer.Token(token_type = "PREAMBLE") 	# make preamble token
 	while True:											# break this loop with returns
@@ -220,7 +207,7 @@ def preamble(tokenQueue):
 			return(False, None)
 		elif token.value not in preamble_commands or token.token_type != "PREAMBLECOMMAND":
 			#if there's some input that doesn't make sense...
-			#print("input doesn't make sense, returning false in preamble")
+		#	print("input doesn't make sense, returning false in preamble")
 			return(False, None)
 		else:
 			#if everything is kosher so far...
@@ -243,11 +230,12 @@ def preamblemacro(token, tokenQueue):
 	>>> _premacro
 	Token('None', 'PREAMBLEMACRO', 'None')
 	>>> _premacro.children[0]
-	Token('preamble', 'PREAMBLECOMMAND', '\preamble')
+	Token('start', 'PREAMBLECOMMAND', '\start')
 
 	>>> testqueue = make_test_queue("preamblemacrofail")
 	>>> token = next_token(testqueue)
 	>>> _premacro, tokenQueue = preamblemacro(token, testqueue)
+	Parsing error: macro token not of type PREAMBLECOMMAND
 	>>> _premacro
 	False
 
@@ -255,6 +243,7 @@ def preamblemacro(token, tokenQueue):
 	>>> testqueue = make_test_queue('macropass')
 	>>> token = next_token(testqueue)
 	>>> _premacro, tokenQueue = preamblemacro(token, testqueue)
+	Parsing error: macro token not of type PREAMBLECOMMAND
 	>>> _premacro
 	False
 	"""
@@ -280,8 +269,8 @@ def passage(tokenQueue):
 	"""
 	This function takes a token queue as input and returns a tuple containing
 	a token and a token queue.
-
-	>>> _passage, tokenQueue = passage(make_test_queue("passage"))
+	>>> tokenQueue = make_test_queue("passage")
+	>>> _passage, tokenQueue = passage(tokenQueue)
 	>>> tokenQueue
 	[Token('EOF', 'EOF', 'None')]
 	>>> _passage
@@ -292,53 +281,52 @@ def passage(tokenQueue):
 	Token('passage', 'PASSAGECOMMAND', '\passage')
 
 	Passages can be followed by other passages.
-	>>> _passage, tokenQueue = passage(make_test_queue("passage2"))
+	>>> tokenQueue = make_test_queue("passage2")
+	>>> _passage, tokenQueue = passage(tokenQueue)
 
 	Second passage should remain in tokenQueue, looping happens in story function.
 	>>> tokenQueue
-	[Token('passage', 'PASSAGECOMMAND', 'passage'), Token('{', 'LEFTCURLY', '{'), Token('second', 'CHARACTER', 'second', Token('}', 'RIGHTCURLY', '}')]
-
+	[Token('passage', 'PASSAGECOMMAND', '\passage'), Token('{', 'LEFTCURLY', '{'), Token('second', 'CHARACTER', 'second'), Token('}', 'RIGHTCURLY', '}')]
 	>>> _passage
 	Token('None', 'PASSAGE', 'None')
 	"""
 	token = next_token(tokenQueue)
-	while token.token_type != "EOF":
-		if token.token_type == "PASSAGECOMMAND":
-			_passage = lexer.Token(token_type = "PASSAGE")
-			_passage.children.append(token)
-
-			while token.token_type != "CHARACTER": # handle arguments
-				print("in passage while loop, ", token, token.token_type)
-				_argument, tokenQueue = argument(tokenQueue)
-				print(f"argument is {_argument}")
-				if len(_argument) == 1:
-					_passage.children.append(_argument[0])
-					token = next_token(tokenQueue)
-				elif len(_argument) > 1:
-					for i in _argument:
-						_passage.children.append(i)
-					token = next_token(tokenQueue)
-				else:
-					print("Parsing error: passage argument not correctly formatted")
-					return (False, None)
-			while token.token_type != "PASSAGECOMMAND" and token.token_type !="EOF":
-				print("grabbing text")
-				_text, tokenQueue = text(tokenQueue)
-				print(f"text is {_text}")
-				if _text:
-					_passage.children.append(_text)
-					token = next_token(tokenQueue)
-				elif _text == False:
-					print("Parsing error: text in passage not correctly formatted")
-					return (False, None)
-				elif _text == None:
-					return (_passage, tokenQueue)
-			else:
-				if token.token_type == "PASSAGECOMMAND":
-					tokenQueue.put(token)
-			return (_passage, tokenQueue)
-	else:
-		return (_passage, tokenQueue)
+	_passage = lexer.Token(token_type = "PASSAGE")
+	_passage.children.append(token)
+	#print(tokenQueue.queue)
+	_argument, tokenQueue = argument(tokenQueue) #get arguments (right now just psgtitle)
+	print("after return, tokenQueue is",tokenQueue)
+	print("after return, _argument is",_argument)
+	if _argument == False:
+		print("_argument is false")
+		return(False, None)
+	elif len(_argument) == 1:
+		_passage.children.append(_argument[0])
+		token = next_token(tokenQueue)
+		print("arg is len 1")
+	elif len(_argument) > 1:
+		for i in _argument:
+			_passage.children.append(i)
+		token = next_token(tokenQueue)
+	print("outside of argument if statement")
+	while token.token_type != "EOF" and token.token_type !="PASSAGECOMMAND":
+			print("grabbing text")
+			_text, tokenQueue = text(tokenQueue)
+			print(f"text is {_text}")
+			if _text:
+				_passage.children.append(_text)
+				print("appending text to passage")
+				token = next_token(tokenQueue)
+				print(token)
+			elif _text == False:
+				print("Parsing error: text in passage not correctly formatted")
+				return (False, None)
+			elif _text == None:
+				return (_passage, tokenQueue)
+	print("outside of while loop")
+	print(token)
+	tokenQueue.put(token)
+	return (_passage, tokenQueue)
 
 def macro(token, tokenQueue):
 	"""
@@ -415,6 +403,7 @@ def argument(tokenQueue):
 	arguments = []
 
 	if token.token_type == "LEFTCURLY":
+		print("token is leftcurly")
 		pass
 	else:
 		return(False, None)
@@ -424,10 +413,13 @@ def argument(tokenQueue):
 		if anothertoken.token_type == "CHARACTER":
 			_argument.children.append(anothertoken)
 			anothertoken = next_token(tokenQueue)
+			print("another token is",anothertoken)
 			if anothertoken.token_type == "RIGHTCURLY":
 				arguments.append(_argument)
 				token = next_token(tokenQueue)
+				print(f"token is {token}")
 			else:
+				print("mismatched curly braces")
 				return (False, None)
 		elif anothertoken.token_type == "MACROCOMMAND":
 			_macro, tokenQueue = macro(token, tokenQueue)
@@ -438,7 +430,10 @@ def argument(tokenQueue):
 		else:
 			print("Parsing Error: argument provided is not a valid argument type.")
 			return(False, None)
+	print("outside while loop")
+	print("before return, arguments is",arguments)
 	tokenQueue.put(token)
+	print("before return, tokenQueue is", tokenQueue.queue)
 	return(arguments, tokenQueue)
 
 def text(tokenQueue):
@@ -457,30 +452,33 @@ def text(tokenQueue):
 
 	Text cannot contain preamble macros.
 	>>> _text, tokenQueue = text(make_test_queue("textfail"))
+	Parsing failed: preamble command in passage text
 	>>> _text
 	False
 	"""
 	_text = lexer.Token(token_type = "TEXT")
 	token = next_token(tokenQueue)
-	print("in text")
-	print(f"token value is {token.value} and token.token_type is {token.token_type}")
 	while token.token_type != "PASSAGECOMAMAND" and token.token_type != "EOF":
 		if token.token_type == "CHARACTER":
 			_text.children.append(token)
 		elif token.token_type == "MACROCOMMAND":
 			_macro, tokenQueue = macro(token, tokenQueue)
-			print(f"_macro is {_macro}")
+			#print(f"_macro is {_macro}")
 			if _macro != False:
-				print("appending macro to _text")
 				_text.children.append(_macro)
 			else:
 				print("macro failed")
 				return(False, None)
+		elif token.token_type == "PREAMBLECOMMAND":
+			print("Parsing failed: preamble command in passage text")
+			return(False, None)
+		else:
+			tokenQueue.put(token)
+			return(_text, tokenQueue)
 		token = next_token(tokenQueue)
-		print(f"new token value is {token.value} and type is {token.token_type}")
-	print("outside while loop")
 	tokenQueue.put(token)
 	return(_text, tokenQueue)
+
 
 if __name__ == "__main__":
 	import doctest
