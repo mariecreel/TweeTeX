@@ -27,7 +27,7 @@ spec:
 <argument> :== "{" (<char>+ | <macro>) "}"
 <text> :== <char>* {<macro>} {<text>}
 
-Nick Creel | Feb 2 2020 | MIT License
+Nick Creel | Feb 5 2020 | MIT License
 """
 import lexer #we need this mostly for the Token object, and testing.
 

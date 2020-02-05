@@ -3,7 +3,7 @@ lexer.py
 
 general purpose lexer class.
 
-nick creel | nov 12 2019 | mit license
+Nick Creel | Feb 5 2020 | MIT License
 """
 import re
 ## TODO: make some simple test story function that makes a simple story for testing...
