@@ -130,7 +130,8 @@ def next_token(tokenQueue):
 	if tokenQueue != None:
 		token = tokenQueue.dequeue()
 		return token
-	raise Exception("Token queue is None, parsing error.")
+	else:
+		raise Exception("Token queue is None, parsing error.")
 
 def parse(tokenQueue):
 	"""
@@ -139,9 +140,11 @@ def parse(tokenQueue):
 	is returned. Otherwise, parse returns False.
 	"""
 	ast = story(tokenQueue)
-	if ast:
+	if ast != False:
+		print("Parsing complete")
 		return ast
 	else:
+		print("Parsing failed")
 		return False
 
 def story(tokenQueue):
@@ -149,12 +152,12 @@ def story(tokenQueue):
 	The story function takes a token queue as input and returns a token if parsing
 	is successful or False otherwise.
 
-	>>> story = story(make_test_queue("storypass"))
-	>>> story
+	>>> _story = story(make_test_queue("storypass"))
+	>>> _story
 	Token('None', 'STORY', 'None')
 
 	"""
-	story = lexer.Token(token_type = "STORY")
+	_story = lexer.Token(token_type = "STORY")
 	_preamble, tokenQueue = preamble(tokenQueue) #get the preamble
 	#debug... print(tokenQueue)
 
@@ -163,14 +166,14 @@ def story(tokenQueue):
 		print("Parsing Error: Preamble not formatted correctly.")
 		return False
 	else:										# if preamble is correctly formatted,
-		story.children.append(_preamble)        # append the preamble to the story tree.
+		_story.children.append(_preamble)        # append the preamble to the story tree.
 		passages = []							# used to store all passages
 		while tokenQueue.isEmpty() == False:    # While we haven't reached EOF...
 			_passage, tokenQueue = passage(tokenQueue)    # get passage
 			passages.append(_passage)		    # add passage to passage list
 		for pas in passages:					# for each passage...
-			story.children.append(pas)			# append passage to story tree
-		return story
+			_story.children.append(pas)			# append passage to story tree
+	return _story
 
 def preamble(tokenQueue):
 	"""
@@ -181,7 +184,7 @@ def preamble(tokenQueue):
 	>>> _preamble, tokenQueue = preamble(make_test_queue("preamble"))
 
 	>>> tokenQueue
-	[]
+	[Token('EOF', 'EOF', 'None')]
 
 	>>> _preamble
 	Token('None', 'PREAMBLE', 'None')
@@ -204,24 +207,31 @@ def preamble(tokenQueue):
 	_preamble = lexer.Token(token_type = "PREAMBLE") 	# make preamble token
 	while True:											# break this loop with returns
 		token = next_token(tokenQueue)				 	# grab a token
+		#print(f"in preamble, token type is {token.token_type} and value is {token.value}")
 		if token.token_type == "PASSAGECOMMAND" and preamble_commands == []:
 			#this should only execute if all preamble macros found...
 			tokenQueue.put(token)
+			#print(f"preamble is {_preamble}")
 			return(_preamble, tokenQueue)
 		elif token.token_type == "PASSAGECOMMAND" and preamble_commands != []:
 			#if we reach a passage before we have all the required preamble commands...
+			#print(f"preamble commands left: {preamble_commands}")
+			#print("preamble_commands not empty, returning false in preamble")
 			return(False, None)
-		elif token.value not in PREAMBLE_COMMANDS or token.token_type != "PREAMBLECOMMAND":
+		elif token.value not in preamble_commands or token.token_type != "PREAMBLECOMMAND":
 			#if there's some input that doesn't make sense...
+			#print("input doesn't make sense, returning false in preamble")
 			return(False, None)
 		else:
 			#if everything is kosher so far...
+			#print("good so far")
+			preamble_commands.pop(preamble_commands.index(token.value))
+			#print(preamble_commands)
 			_premacro, tokenQueue = preamblemacro(token, tokenQueue)
 			if _premacro == False:
 				return(False, None)
-			elif _premacro.value in preamble_commands:
-				preamble_commands.pop(preamble_commands.index(_premacro.value))
-				_preamble.children.append(_macro)
+			else:
+				_preamble.children.append(_premacro)
 
 def preamblemacro(token, tokenQueue):
 	"""
@@ -255,14 +265,15 @@ def preamblemacro(token, tokenQueue):
 	else:
 		_preamblemacro.children.append(token)
 		_argument, tokenQueue = argument(tokenQueue)
-		print("argument is ",_argument)
+		#print("argument is ",_argument[0].children[0])
 		if len(_argument) == 1:
 			#preamble macro should only have one argument
-			_macro.children.append(_argument[0])
+			_preamblemacro.children.append(_argument[0])
 		else:
 			print("Parsing error: argument for preamble macro not formatted correctly")
 			return(False, None)
-	print("returning preamble macro")
+	#print("returning preamble macro")
+	#print(f"_preamblemacro is {_preamblemacro}")
 	return(_preamblemacro, tokenQueue)
 
 def passage(tokenQueue):
@@ -272,7 +283,7 @@ def passage(tokenQueue):
 
 	>>> _passage, tokenQueue = passage(make_test_queue("passage"))
 	>>> tokenQueue
-	[]
+	[Token('EOF', 'EOF', 'None')]
 	>>> _passage
 	Token('None', 'PASSAGE', 'None')
 
@@ -291,12 +302,15 @@ def passage(tokenQueue):
 	Token('None', 'PASSAGE', 'None')
 	"""
 	token = next_token(tokenQueue)
-	while token.value != "EOF":
+	while token.token_type != "EOF":
 		if token.token_type == "PASSAGECOMMAND":
 			_passage = lexer.Token(token_type = "PASSAGE")
+			_passage.children.append(token)
+
 			while token.token_type != "CHARACTER": # handle arguments
 				print("in passage while loop, ", token, token.token_type)
 				_argument, tokenQueue = argument(tokenQueue)
+				print(f"argument is {_argument}")
 				if len(_argument) == 1:
 					_passage.children.append(_argument[0])
 					token = next_token(tokenQueue)
@@ -307,8 +321,10 @@ def passage(tokenQueue):
 				else:
 					print("Parsing error: passage argument not correctly formatted")
 					return (False, None)
-			while token.value != ("passage" or "EOF"): # grab text
+			while token.token_type != "PASSAGECOMMAND" and token.token_type !="EOF":
+				print("grabbing text")
 				_text, tokenQueue = text(tokenQueue)
+				print(f"text is {_text}")
 				if _text:
 					_passage.children.append(_text)
 					token = next_token(tokenQueue)
@@ -331,25 +347,25 @@ def macro(token, tokenQueue):
 
 	>>> _token = None
 	>>> _macro = None
-	>>>	tokenQueue = make_test_queue("macropass")
+	>>> tokenQueue = None
+    >>> tokenQueue = make_test_queue("macropass")
 	>>> _token = next_token(tokenQueue)
 	>>> _macro, tokenQueue = macro(_token, tokenQueue)
 	>>> _macro
 	Token('None', 'MACRO', 'None')
 
 	>>> tokenQueue
-	[]
+	[Token('EOF', 'EOF', 'None')]
 
 	Recall that the test macro is the link macro.
 	>>> _macro.children[0]
 	Token('link', 'MACROCOMMAND', '\link')
 
 	Macro cannot handle a preamblemacro.
-	>>>	tokenQueue = make_test_queue("preamblemacropass")
+    >>>	tokenQueue = make_test_queue("preamblemacropass")
 	>>> _token = next_token(tokenQueue)
 	>>> _macro, tokenQueue = macro(_token, tokenQueue)
-	>>> _macro
-	False
+	Parsing error: macro token not of type MACROCOMMAND
 	"""
 	_macro = lexer.Token(token_type =  "MACRO")
 	if token.token_type != "MACROCOMMAND":
@@ -358,7 +374,6 @@ def macro(token, tokenQueue):
 	else:
 		_macro.children.append(token)
 		_argument, tokenQueue = argument(tokenQueue)
-		print("argument is ",_argument)
 		if len(_argument) == 1:
 			_macro.children.append(_argument[0])
 		elif len(_argument) > 1:
@@ -367,7 +382,6 @@ def macro(token, tokenQueue):
 		else:
 			print("Parsing error: argument for macro not formatted correctly")
 			return(False, None)
-	print("returning macro")
 	return(_macro, tokenQueue)
 
 def argument(tokenQueue):
@@ -380,16 +394,20 @@ def argument(tokenQueue):
 	[Token('None', 'ARGUMENT', 'None')]
 
 	>>> tokenQueue
-	[]
+	[Token('EOF', 'EOF', 'None')]
 
-	Recall that the first component of an argument is a left curly brace.
-	>>> _argument.children[0]
-	Token('{', 'LEFTCURLY', '}')
+	The list _argument contains a list of the ARGUMENT type tokens.
+	>>> _argument[0]
+	Token('None', 'ARGUMENT', 'None')
+
+	Each token in this list should have children, which are the actual arguments
+	contained in curly braces.
+	>>> _argument[0].children[0]
+	Token('argument', 'CHARACTER', 'argument')
 
 	A preamble macro cannot be an argument.
 	>>> _argument, tokenQueue = argument(make_test_queue("argumentfail"))
-	>>> _argument
-	False
+	Parsing Error: argument provided is not a valid argument type.
 	"""
 
 	_argument = lexer.Token(token_type = "ARGUMENT")
@@ -407,7 +425,6 @@ def argument(tokenQueue):
 			_argument.children.append(anothertoken)
 			anothertoken = next_token(tokenQueue)
 			if anothertoken.token_type == "RIGHTCURLY":
-				print(_argument, _argument.children)
 				arguments.append(_argument)
 				token = next_token(tokenQueue)
 			else:
@@ -445,15 +462,23 @@ def text(tokenQueue):
 	"""
 	_text = lexer.Token(token_type = "TEXT")
 	token = next_token(tokenQueue)
-	while token.value != "passage" or token.value != "EOF":
+	print("in text")
+	print(f"token value is {token.value} and token.token_type is {token.token_type}")
+	while token.token_type != "PASSAGECOMAMAND" and token.token_type != "EOF":
 		if token.token_type == "CHARACTER":
 			_text.children.append(token)
-			token = next_token(tokenQueue)
 		elif token.token_type == "MACROCOMMAND":
 			_macro, tokenQueue = macro(token, tokenQueue)
-			if _macro:
+			print(f"_macro is {_macro}")
+			if _macro != False:
+				print("appending macro to _text")
 				_text.children.append(_macro)
-				token = next_token(tokenQueue)
+			else:
+				print("macro failed")
+				return(False, None)
+		token = next_token(tokenQueue)
+		print(f"new token value is {token.value} and type is {token.token_type}")
+	print("outside while loop")
 	tokenQueue.put(token)
 	return(_text, tokenQueue)
 
