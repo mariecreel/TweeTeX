@@ -21,7 +21,7 @@ spec:
 <preamble> :== "\" <preamblecommand> <argument> {"\" <preamblecommand> <argument>}
 <macro> :== "\" <macrocommand>  <argument>*
 <preamblecommand> :== "start" | "author" | "title" | "ifid"
-<macrocommand> :== "link" ## more soon?
+<macrocommand> :== "link"
 <passage> :== "\passage" { <argument> } <text>
 <char> :== [^\\\{\}]
 <argument> :== "{" (<char>+ | <macro>) "}"
@@ -167,6 +167,7 @@ def story(tokenQueue):
 		_story.children.append(_preamble)        # append the preamble to the story tree.
 		passages = []							# used to store all passages
 		while tokenQueue.queue[0].token_type != "EOF":
+			print('passages:',passages)
 			_passage, tokenQueue = passage(tokenQueue)    # get passage
 			passages.append(_passage)		    # add passage to passage list
 		for pas in passages:					# for each passage...
@@ -283,30 +284,30 @@ def passage(tokenQueue):
 	Token('None', 'PASSAGE', 'None')
 	"""
 	token = next_token(tokenQueue)
+	#print("tokenQueue after getting next token in passage:", tokenQueue)
 	_passage = lexer.Token(token_type = "PASSAGE")
 	_passage.children.append(token)
 	_argument, tokenQueue = argument(tokenQueue) #get arguments (right now just psgtitle)
+	#print("tokenQueue after running argument in passage:", tokenQueue)
 	if _argument == False:
 		return(False, None)
 	elif len(_argument) == 1:
 		_passage.children.append(_argument[0])
-		token = next_token(tokenQueue)
-	elif len(_argument) > 1:
+	else:
 		for i in _argument:
 			_passage.children.append(i)
-		token = next_token(tokenQueue)
+	token = lexer.Token()
 	while token.token_type != "EOF" and token.token_type !="PASSAGECOMMAND":
 			_text, tokenQueue = text(tokenQueue)
+			#print("tokenQueue in while loop of passage:", tokenQueue)
 			if _text:
 				_passage.children.append(_text)
 				token = next_token(tokenQueue)
-				print(token)
-			elif _text == False:
+				#print(token)
+			else:
 				print("Parsing error: text in passage not correctly formatted")
 				return (False, None)
-			elif _text == None:
-				return (_passage, tokenQueue)
-	print(token)
+	#print(token)
 	tokenQueue.put(token)
 	return (_passage, tokenQueue)
 
@@ -401,7 +402,7 @@ def argument(tokenQueue):
 				return (False, None)
 		elif anothertoken.token_type == "MACROCOMMAND":
 			_macro, tokenQueue = macro(token, tokenQueue)
-			print(_macro.children)
+			#print(_macro.children)
 			_argument.children.append(_macro)
 			if _argument:
 				return(_argument, tokenQueue)
@@ -435,6 +436,7 @@ def text(tokenQueue):
 	token = next_token(tokenQueue)
 	while token.token_type != "PASSAGECOMAMAND" and token.token_type != "EOF":
 		if token.token_type == "CHARACTER":
+			print('text token contents:', token.value)
 			_text.children.append(token)
 		elif token.token_type == "MACROCOMMAND":
 			_macro, tokenQueue = macro(token, tokenQueue)
