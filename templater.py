@@ -8,35 +8,71 @@ https://github.com/iftechfoundation/twine-specs/blob/master/twee-3-specification
 Sugarcube documentation:
 https://www.motoslave.net/sugarcube/2/
 
-Nick Creel - Feb 7 2020 - MIT License
+Nick Creel - Mar 4 2020 - MIT License
 """
-
 import lexer
-TOPTOKENS = ["STORY", "PASSAGE", "TEXT", "MACRO", "PREAMBLEMACRO"]
+
+TEMPLATES = {
+	"link": "f'[[{text}|{link}]]'",
+	#"MACROCOMMAND": "f'<<{command} '", THIS CAN BE DONE LATER
+	#"MACROEND": '>>',
+	"PASSAGECOMMAND": 'f":: {value}"',
+	"PREAMBLEMACRO": r"f'\"{name}\": \"{value}\",\n'",
+	"PREAMBLESTART": ':: StoryData \n { \n "format": "SugarCube",\n',
+	"TEXT" : r'\n'
+}
+
+
 def visitTokens(parent):
-	result = ""
-	for child in parent.children:
-		if child.token_type == "PREAMBLE":
-			result += ":: StoryData \n {"
-			result += visitChildren(child)
-			result += "}"
-			return result
-		elif child.token_type in TOPTOKENS:
-			result += visitChildren(child)
-			return result
-		elif child.token_type == "PREAMBLECOMMAND":
-			result += f'"{child.value}": '
-		elif child.token_type == "MACROCOMMAND":
-			if child.value == "link":
-				if len(child.children) == 1:
-					link = f"[[{arg1}]]"
-				result += visitChildren(child)
-				return result
+	"""
+	visitTokens takes a parent token as input and returns a string. Call recursively
+	on token children to parse the entire AST.
+	"""
+	result = r""
+	if parent.token_type in ["MACRO", "ARGUMENT", "STORY", "PASSAGE"]:
+		for child in parent.children:
+			result += visitTokens(child)
+	else:
+		if parent.token_type == "PREAMBLE":
+			preambledata = ""
+			for child in parent.children:
+				preambledata += "    " + visitTokens(child)
+			preamble = (':: StoryData \n{ \n' +
+						preambledata + '    "format": "SugarCube"\n}')
+			result += preamble
+		elif parent.value =="link":
+			formatdict = {'text': parent.children[0], 'link': parent.children[1]}
+			result += eval(TEMPLATES['link'], formatdict)
+
+		elif parent.token_type in TEMPLATES:
+			print(f"token type is {parent.token_type}")
+			print("token type is in templates")
+			if parent.token_type == "TEXT":
+				result += TEMPLATES["TEXT"]
+				for child in parent.children:
+					result += visitTokens(child)
+
+			elif parent.token_type == "PREAMBLEMACRO":
+				formatdict = {}
+				for child in parent.children:
+					if child.token_type == "PREAMBLECOMMAND":
+						formatdict['name'] = child.value
+					else:
+						formatdict['value'] = visitTokens(child)
+				result += eval(TEMPLATES["PREAMBLEMACRO"], formatdict)
 			else:
-		elif child.token_type == "ARGUMENT":
-			if parent.token_type == "PREAMBLEMACRO":
-				result += f'"{child.value}", \n'
+				formatdict = {'value' : parent.value}
+				result += eval(TEMPLATES[parent.token_type], formatdict)
+		else: # should be CHARACTER
+			print(f"value is {parent.value}, token_type is {parent.token_type}")
+			result += parent.value
+	print("result is", result)
+	return result
 
+def makeNewFile(filename, story):
+	tweestory = visitTokens(story)
+	with open(filename, 'w') as file:
+		file.write(tweestory)
+	print("successfully wrote story to file")
+	return tweestory
 
-def makeSugarcubeFile(filename, story):
-	file = open(filename, "w")

@@ -4,10 +4,12 @@ tweetex.py
 Nick Creel | Feb 5 2020 | MIT License
 """
 
-from lexer import Lexer
-import parser
-import re
-import argparse
+from lexer import Lexer # my lexer
+import argparse  		# external library for handling input from command line
+import parser 			# parser
+import templater 		# code generator
+import re		 		# for regular expressions
+
 
 def getfile():
     parser = argparse.ArgumentParser(description="accepts input \ for TweeTex compiler")
@@ -16,7 +18,7 @@ def getfile():
     args = parser.parse_args()
     with open(args.file[0], "r") as file:
         source = file.read()
-    return source
+    return (source, args.file[0])
 
 def printchildren(token):
     #this is depth first, just a test.
@@ -32,16 +34,19 @@ def printchildren(token):
                 print(atoken)
 
 def main():
-    source = getfile()
+    source, sourceName = getfile()
+    sourceName = sourceName[:-3] + 'tw' #change to Twee extension
     mylexer = Lexer(source)
     mylexer.lex()
     tokens = mylexer.tokens
     print("-------printing tokens produced by lexer")
     for i in tokens.queue:
         print(i)
-
     print("\n--------beginning parse routine")
-    ast = parser.parse(tokenQueue = tokens)
+    ast = parser.parse(tokenQueue = tokens) #this is NOT the same as argparse
     print(ast)
     printchildren(ast)
+    print("\n--------beginning code generation")
+    result = templater.makeNewFile(sourceName,ast)
+
 main()

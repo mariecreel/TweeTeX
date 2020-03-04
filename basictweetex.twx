@@ -5,7 +5,7 @@
 
 \passage{Starting Passage}
 This is some text in the first passage
-\link{Second Passage}{This link goes to the second passage}
+\link{This link goes to the second passage}{Second Passage}
 
 \passage{Second Passage}
 This is some text in the second passage.
