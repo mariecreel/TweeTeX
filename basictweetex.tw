@@ -1,0 +1,15 @@
+:: StoryData 
+{ 
+    "author": "Nick Creel",
+    "ifid": "0CA8C7C5-F219-4B1B-A3A8-45710F389818",
+    "start": "Starting Passage",
+    "format": "SugarCube"
+}
+:: StoryTitle 
+My Story
+
+:: Starting Passage
+This is some text in the first passage
+[[This link goes to the second passage|Second Passage]]
+:: Second Passage
+This is some text in the second passage.

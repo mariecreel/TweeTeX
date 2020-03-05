@@ -16,10 +16,8 @@ TEMPLATES = {
 	"link": "f'[[{text}|{link}]]'",
 	#"MACROCOMMAND": "f'<<{command} '", THIS CAN BE DONE LATER
 	#"MACROEND": '>>',
-	"PASSAGECOMMAND": 'f":: {value}"',
 	"PREAMBLEMACRO": r"f'\"{name}\": \"{value}\",\n'",
-	"PREAMBLESTART": ':: StoryData \n { \n "format": "SugarCube",\n',
-	"TEXT" : r'\n'
+	"TEXT" : '\n'
 }
 
 
@@ -28,21 +26,42 @@ def visitTokens(parent):
 	visitTokens takes a parent token as input and returns a string. Call recursively
 	on token children to parse the entire AST.
 	"""
-	result = r""
-	if parent.token_type in ["MACRO", "ARGUMENT", "STORY", "PASSAGE"]:
+	result = ""
+	if parent.token_type in ["ARGUMENT", "STORY"]:
 		for child in parent.children:
 			result += visitTokens(child)
 	else:
 		if parent.token_type == "PREAMBLE":
 			preambledata = ""
 			for child in parent.children:
-				preambledata += "    " + visitTokens(child)
+				if child.children[0].value == "title":
+					title = ":: StoryTitle \n"
+					title += (child.children[1].children[0].value)  # FIX THIS-- may cause problems in the future because it's too hardcoded.
+					title += '\n'
+				else:
+					preambledata += "    " + visitTokens(child)
 			preamble = (':: StoryData \n{ \n' +
-						preambledata + '    "format": "SugarCube"\n}')
+						preambledata + '    "format": "SugarCube"\n}\n')
 			result += preamble
-		elif parent.value =="link":
-			formatdict = {'text': parent.children[0], 'link': parent.children[1]}
-			result += eval(TEMPLATES['link'], formatdict)
+			result += title
+
+		elif parent.token_type =="MACRO":
+			if parent.children[0].value == "link":
+				print('evaluating link')
+				print(f'text is {parent.children[1].children[0]}, link is {parent.children[2].children[0]}')
+				formatdict = {'text': parent.children[1].children[0].value, 'link': parent.children[2].children[1].value}
+				result += eval(TEMPLATES['link'], formatdict)
+			else:
+				print("this shouldn't happen!!")
+
+		elif parent.token_type == "PASSAGE":
+			result += '\n'
+			title = ":: "
+			title += visitTokens(parent.children[1])
+			result += title
+			for child in parent.children:
+				if child.token_type in ["TEXT"]:
+					result += visitTokens(child)
 
 		elif parent.token_type in TEMPLATES:
 			print(f"token type is {parent.token_type}")
@@ -51,7 +70,6 @@ def visitTokens(parent):
 				result += TEMPLATES["TEXT"]
 				for child in parent.children:
 					result += visitTokens(child)
-
 			elif parent.token_type == "PREAMBLEMACRO":
 				formatdict = {}
 				for child in parent.children:
@@ -60,6 +78,7 @@ def visitTokens(parent):
 					else:
 						formatdict['value'] = visitTokens(child)
 				result += eval(TEMPLATES["PREAMBLEMACRO"], formatdict)
+
 			else:
 				formatdict = {'value' : parent.value}
 				result += eval(TEMPLATES[parent.token_type], formatdict)
